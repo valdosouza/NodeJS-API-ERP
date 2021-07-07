@@ -86,8 +86,7 @@ class ServicesController {
                 };
                 if (answer) break;
 
-            };
-            console.log(answer);
+            };            
             resolve(answer);
         });
         return promise;

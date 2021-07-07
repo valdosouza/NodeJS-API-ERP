@@ -120,7 +120,7 @@ class UserController extends Base {
     
     const promise = new Promise((resolve, reject) => {
       Tb.sequelize.query(
-        'Select u.* ' +
+        'Select u.id, m.email, u.password, "" token ' +
         'from tb_user u ' +
         '  inner join tb_mailing m ' +
         '  on (u.id = m.id) ' +
@@ -130,11 +130,11 @@ class UserController extends Base {
           replacements: [email, password.toUpperCase()],
           type: Tb.sequelize.QueryTypes.SELECT
         }).then(data => {
-          console.log(data);
-          if (data) { resolve(data) } else { resolve('0') };
+          
+          if (data) { resolve(data) } else { resolve(Null) };
         })
         .catch(err => {
-          reject(new Error("Algum erro aconteceu ao buscar o Usuário"));
+          reject(new Error(err+ " |"+ "Algum erro aconteceu ao buscar o Usuário"));
         });
     });
     return promise;
@@ -144,16 +144,26 @@ class UserController extends Base {
     const promise = new Promise((resolve) => {
 
       const now = Math.floor(Date.now() / 1000);
-
+      
+      const userId =  data[0].id;
+      const userEmail = data[0].email;
+      const userPassword =  data[0].password;
+      
       const payload = {
-        id: data.id,
-        email: data.email,
-        password: data.password        
-      }
-      var token = jwt.sign({ payload }, process.env.SECRET, {expiresIn: "15d"   });
-      //var token = jwt.sign(payload, process.env.SECRET, {algorithm: 'HS256', expiresIn: "15d"});
-
-      resolve({ auth: true, token: token });
+        id: userId,
+        email: userEmail,
+        password: userPassword
+      }      
+      
+      var token =jwt.sign({ payload }, process.env.SECRET, {expiresIn: "15d"   });
+      const result = {
+        auth: true,
+        id: userId,
+        username: userEmail,
+        password: "",
+        jwt : token,
+      }     
+      resolve(result);
     });
     return promise;
   }
@@ -161,7 +171,7 @@ class UserController extends Base {
   static authorization(token){
     const promise = new Promise((resolve,reject) => {    
       try {
-        console.log(token);
+        
         resolve(jwt.verify(token, process.env.SECRET, {algorithm: 'HS256'}));
       } catch {
         reject("Bad Token");

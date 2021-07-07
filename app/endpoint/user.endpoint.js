@@ -76,8 +76,7 @@ class UserEndPoint {
 
     UserController.getUserAuth(req.body.email, req.body.password)
       .then(data => {        
-        if (data == 0) return res.json({ auth: false, token: "" });
-
+        if (!data) return res.json({ auth: false, token: "" });
         UserController.generateJWT(data)
           .then(data => {
             return res.json(data);
@@ -92,7 +91,7 @@ class UserEndPoint {
   };
   
   static authorization = (req, res) => {
-    console.log(req.get('Authorization'));
+    
     res.send("ok"); 
   }
 }
